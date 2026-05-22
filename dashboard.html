@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Dashboard - Real-time Sensor Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header .status {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 0.5rem 1rem;
+            border: 2px solid #2a5298;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn.secondary {
+            background: #ef4444;
+        }
+
+        /* Main Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+        }
+
+        /* Sensor Cards */
+        .sensor-card {
+            text-align: center;
+        }
+
+        .sensor-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2a5298;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .sensor-unit {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .sensor-status {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .sensor-status.warning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .sensor-status.critical {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Mini Chart */
+        .mini-chart {
+            height: 100px;
+            margin-top: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #2a5298;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            height: 350px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e3c72;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        /* Data Table */
+        .table-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .timestamp {
+            font-size: 0.9rem;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Alerts */
+        .alerts {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .alerts-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .alert-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #2a5298;
+            background: #f0f9ff;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .alert-item.critical {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .alert-time {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .control-panel {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .control-group {
+                width: 100%;
+            }
+            .control-group select,
+            .control-group input {
+                width: 100%;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #2a5298;
+            border-radius: 50%;
+            animation: loading 1s infinite;
+        }
+
+        @keyframes loading {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div>
+            <h1>📊 IoT Dashboard</h1>
+            <p>Real-time Sensor Monitoring System</p>
+        </div>
+        <div class="status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="statusText">Live</span>
+            </div>
+            <div class="status-indicator">
+                Last Update: <span id="lastUpdate">--:--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="updateInterval">Update Interval:</label>
+                <select id="updateInterval">
+                    <option value="1000">1 second</option>
+                    <option value="2000" selected>2 seconds</option>
+                    <option value="5000">5 seconds</option>
+                    <option value="10000">10 seconds</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="dataPoints">Data Points:</label>
+                <select id="dataPoints">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <button class="btn" onclick="startSimulation()">▶️ Start</button>
+            <button class="btn secondary" onclick="stopSimulation()">⏹️ Stop</button>
+            <button class="btn" onclick="resetData()">🔄 Reset</button>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="alerts">
+            <div class="alerts-title">⚠️ Active Alerts</div>
+            <div id="alertsContainer">
+                <p style="color: #666;">No alerts. All sensors operating normally.</p>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard">
+            <!-- Temperature Card -->
+            <div class="card sensor-card">
+                <div class="card-header">
+                    <span class="card-title">🌡️ Temperature</span>
+                    <span class="card-icon">🔴</span>
+                </div>
+                <div class="sensor-value" id="tempValue">--</div>
+                <div class="sensor-unit">°Celsius</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="tempMin">--</div>
+                        <div class="stat-label">Min</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tempMax">--</div>
+                        <div class="stat-label">Max</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tempAvg">--</div>
+                        <div class="stat-label">Avg</div>
+                    </div>
+                </div>
+                <div id="tempStatus" class="sensor-status">✓ Normal</div>
+                <div class="mini-chart">
+                    <canvas id="tempMiniChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Humidity Card -->
+            <div class="card sensor-card">
+                <div class="card-header">
+                    <span class="card-title">💧 Humidity</span>
+                    <span class="card-icon">💙</span>
+                </div>
+                <div class="sensor-value" id="humidValue">--</div>
+                <div class="sensor-unit">%</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="humidMin">--</div>
+                        <div class="stat-label">Min</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="humidMax">--</div>
+                        <div class="stat-label">Max</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="humidAvg">--</div>
+                        <div class="stat-label">Avg</div>
+                    </div>
+                </div>
+                <div id="humidStatus" class="sensor-status">✓ Normal</div>
+                <div class="mini-chart">
+                    <canvas id="humidMiniChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Motion Card -->
+            <div class="card sensor-card">
+                <div class="card-header">
+                    <span class="card-title">🚨 Motion Sensor</span>
+                    <span class="card-icon">⚡</span>
+                </div>
+                <div class="sensor-value" id="motionValue">--</div>
+                <div class="sensor-unit">State</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="motionCount">--</div>
+                        <div class="stat-label">Detections</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="motionTotal">--</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="motionPercent">--</div>
+                        <div class="stat-label">%</div>
+                    </div>
+                </div>
+                <div id="motionStatus" class="sensor-status">✓ No Motion</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <!-- Temperature Chart -->
+            <div class="chart-container">
+                <div class="chart-title">📈 Temperature Trend</div>
+                <canvas id="tempChart"></canvas>
+            </div>
+
+            <!-- Humidity Chart -->
+            <div class="chart-container">
+                <div class="chart-title">📊 Humidity Trend</div>
+                <canvas id="humidChart"></canvas>
+            </div>
+
+            <!-- Motion Chart -->
+            <div class="chart-container">
+                <div class="chart-title">🚨 Motion Detection Pattern</div>
+                <canvas id="motionChart"></canvas>
+            </div>
+
+            <!-- Data Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">📉 Data Distribution</div>
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <div class="chart-title">📋 Recent Readings</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Sensor Type</th>
+                        <th>Value</th>
+                        <th>Unit</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999;">No data yet. Click "Start" to begin.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>🔬 DecodeLabs IoT Dashboard | Real-time Sensor Monitoring</p>
+        <p style="margin-top: 0.5rem; opacity: 0.8;">Data visualization with Chart.js | Auto-updating every 2 seconds</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let temperatureData = [];
+        let humidityData = [];
+        let motionData = [];
+        let timestamps = [];
+        let isRunning = false;
+        let updateInterval = 2000;
+        let maxDataPoints = 20;
+        let simulationInterval;
+        let chartInstances = {};
+
+        // Initialize charts
+        function initializeCharts() {
+            // Temperature Trend Chart
+            const tempCtx = document.getElementById('tempChart').getContext('2d');
+            chartInstances.temp = new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: temperatureData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 10,
+                            max: 40,
+                            ticks: { color: '#666' }
+                        },
+                        x: { ticks: { color: '#666' } }
+                    }
+                }
+            });
+
+            // Humidity Chart
+            const humidCtx = document.getElementById('humidChart').getContext('2d');
+            chartInstances.humid = new Chart(humidCtx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Humidity (%)',
+                        data: humidityData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: { color: '#666' }
+                        },
+                        x: { ticks: { color: '#666' } }
+                    }
+                }
+            });
+
+            // Motion Chart
+            const motionCtx = document.getElementById('motionChart').getContext('2d');
+            chartInstances.motion = new Chart(motionCtx, {
+                type: 'bar',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Motion Detected',
+                        data: motionData,
+                        backgroundColor: motionData.map(v => v > 0 ? '#f59e0b' : '#e5e7eb'),
+                        borderColor: '#f59e0b',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 1,
+                            ticks: { color: '#666', stepSize: 1 }
+                        },
+                        x: { ticks: { color: '#666' } }
+                    }
+                }
+            });
+
+            // Distribution Chart (Pie)
+            const distCtx = document.getElementById('distributionChart').getContext('2d');
+            chartInstances.distribution = new Chart(distCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Motion Detected', 'No Motion'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#f59e0b', '#e5e7eb'],
+                        borderColor: ['#fff', '#fff'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Mini charts
+            initializeMiniCharts();
+        }
+
+        // Initialize mini charts
+        function initializeMiniCharts() {
+            const tempMiniCtx = document.getElementById('tempMiniChart').getContext('2d');
+            chartInstances.tempMini = new Chart(tempMiniCtx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        data: temperatureData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 1,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false, min: 10, max: 40 },
+                        x: { display: false }
+                    }
+                }
+            });
+
+            const humidMiniCtx = document.getElementById('humidMiniChart').getContext('2d');
+            chartInstances.humidMini = new Chart(humidMiniCtx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        data: humidityData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 1,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false, min: 0, max: 100 },
+                        x: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Generate sensor data
+        function generateSensorData() {
+            // Temperature (20-30°C with drift)
+            let temp = temperatureData.length > 0 ? 
+                temperatureData[temperatureData.length - 1] + (Math.random() - 0.5) * 2 :
+                20 + Math.random() * 5;
+            temp = Math.max(15, Math.min(35, temp));
+
+            // Humidity (40-70% with drift)
+            let humid = humidityData.length > 0 ?
+                humidityData[humidityData.length - 1] + (Math.random() - 0.5) * 3 :
+                50 + Math.random() * 20;
+            humid = Math.max(20, Math.min(95, humid));
+
+            // Motion (random)
+            let motion = Math.random() < 0.3 ? 1 : 0;
+
+            return { temp: parseFloat(temp.toFixed(2)), humid: parseFloat(humid.toFixed(2)), motion };
+        }
+
+        // Update data
+        function updateData() {
+            const data = generateSensorData();
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+
+            temperatureData.push(data.temp);
+            humidityData.push(data.humid);
+            motionData.push(data.motion);
+            timestamps.push(timeString);
+
+            // Keep only maxDataPoints
+            if (temperatureData.length > maxDataPoints) {
+                temperatureData.shift();
+                humidityData.shift();
+                motionData.shift();
+                timestamps.shift();
+            }
+
+            updateDisplay();
+            updateCharts();
+            updateTable();
+            updateAlerts();
+        }
+
+        // Update display values
+        function updateDisplay() {
+            const temp = temperatureData[temperatureData.length - 1] || 0;
+            const humid = humidityData[humidityData.length - 1] || 0;
+            const motion = motionData[motionData.length - 1] || 0;
+
+            document.getElementById('tempValue').textContent = temp.toFixed(1);
+            document.getElementById('humidValue').textContent = humid.toFixed(1);
+            document.getElementById('motionValue').textContent = motion === 1 ? '✓ DETECTED' : 'No';
+
+            // Update stats
+            const tempMin = Math.min(...temperatureData);
+            const tempMax = Math.max(...temperatureData);
+            const tempAvg = (temperatureData.reduce((a, b) => a + b, 0) / temperatureData.length).toFixed(1);
+
+            const humidMin = Math.min(...humidityData);
+            const humidMax = Math.max(...humidityData);
+            const humidAvg = (humidityData.reduce((a, b) => a + b, 0) / humidityData.length).toFixed(1);
+
+            const motionCount = motionData.filter(m => m === 1).length;
+            const motionPercent = ((motionCount / motionData.length) * 100).toFixed(1);
+
+            document.getElementById('tempMin').textContent = tempMin.toFixed(1);
+            document.getElementById('tempMax').textContent = tempMax.toFixed(1);
+            document.getElementById('tempAvg').textContent = tempAvg;
+
+            document.getElementById('humidMin').textContent = humidMin.toFixed(1);
+            document.getElementById('humidMax').textContent = humidMax.toFixed(1);
+            document.getElementById('humidAvg').textContent = humidAvg;
+
+            document.getElementById('motionCount').textContent = motionCount;
+            document.getElementById('motionTotal').textContent = motionData.length;
+            document.getElementById('motionPercent').textContent = motionPercent;
+
+            // Update status
+            const tempStatus = temp > 28 ? 'warning' : temp < 16 ? 'critical' : '';
+            const humidStatus = humid > 80 ? 'warning' : humid < 30 ? 'critical' : '';
+            const motionStatus = motion === 1 ? 'warning' : '';
+
+            const tempStatusEl = document.getElementById('tempStatus');
+            const humidStatusEl = document.getElementById('humidStatus');
+            const motionStatusEl = document.getElementById('motionStatus');
+
+            tempStatusEl.className = 'sensor-status ' + tempStatus;
+            tempStatusEl.textContent = temp > 28 ? '⚠️ High' : temp < 16 ? '❌ Low' : '✓ Normal';
+
+            humidStatusEl.className = 'sensor-status ' + humidStatus;
+            humidStatusEl.textContent = humid > 80 ? '⚠️ High' : humid < 30 ? '❌ Low' : '✓ Normal';
+
+            motionStatusEl.className = 'sensor-status ' + motionStatus;
+            motionStatusEl.textContent = motion === 1 ? '🚨 MOTION!' : '✓ No Motion';
+
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Update charts
+        function updateCharts() {
+            if (chartInstances.temp) chartInstances.temp.update('none');
+            if (chartInstances.humid) chartInstances.humid.update('none');
+            if (chartInstances.motion) chartInstances.motion.update('none');
+            if (chartInstances.distribution) {
+                const motionCount = motionData.filter(m => m === 1).length;
+                chartInstances.distribution.data.datasets[0].data = [motionCount, motionData.length - motionCount];
+                chartInstances.distribution.update('none');
+            }
+            if (chartInstances.tempMini) chartInstances.tempMini.update('none');
+            if (chartInstances.humidMini) chartInstances.humidMini.update('none');
+        }
+
+        // Update table
+        function updateTable() {
+            const tbody = document.getElementById('dataTable');
+            const latestReadings = [];
+
+            for (let i = temperatureData.length - 1; i >= Math.max(0, temperatureData.length - 10); i--) {
+                latestReadings.push(
+                    {
+                        timestamp: timestamps[i],
+                        type: 'Temperature',
+                        value: temperatureData[i],
+                        unit: '°C',
+                        status: temperatureData[i] > 28 ? '⚠️ High' : temperatureData[i] < 16 ? '❌ Low' : '✓ OK'
+                    },
+                    {
+                        timestamp: timestamps[i],
+                        type: 'Humidity',
+                        value: humidityData[i],
+                        unit: '%',
+                        status: humidityData[i] > 80 ? '⚠️ High' : humidityData[i] < 30 ? '❌ Low' : '✓ OK'
+                    },
+                    {
+                        timestamp: timestamps[i],
+                        type: 'Motion',
+                        value: motionData[i] === 1 ? 'Detected' : 'None',
+                        unit: 'State',
+                        status: motionData[i] === 1 ? '🚨 Alert' : '✓ OK'
+                    }
+                );
+            }
+
+            tbody.innerHTML = latestReadings.map(reading => `
+                <tr>
+                    <td class="timestamp">${reading.timestamp}</td>
+                    <td>${reading.type}</td>
+                    <td><strong>${reading.value}</strong></td>
+                    <td>${reading.unit}</td>
+                    <td>${reading.status}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update alerts
+        function updateAlerts() {
+            const alerts = [];
+            const temp = temperatureData[temperatureData.length - 1] || 0;
+            const humid = humidityData[humidityData.length - 1] || 0;
+            const motion = motionData[motionData.length - 1] || 0;
+
+            if (temp > 30) alerts.push({ type: 'critical', msg: '🔴 Critical: Temperature exceeds 30°C' });
+            if (temp < 15) alerts.push({ type: 'critical', msg: '🔴 Critical: Temperature below 15°C' });
+            if (temp > 28) alerts.push({ type: 'warning', msg: '🟡 Warning: High temperature detected' });
+            if (temp < 16) alerts.push({ type: 'warning', msg: '🟡 Warning: Low temperature detected' });
+            
+            if (humid > 85) alerts.push({ type: 'critical', msg: '🔴 Critical: Humidity exceeds 85%' });
+            if (humid < 25) alerts.push({ type: 'critical', msg: '🔴 Critical: Humidity below 25%' });
+            if (humid > 80) alerts.push({ type: 'warning', msg: '🟡 Warning: High humidity detected' });
+            if (humid < 30) alerts.push({ type: 'warning', msg: '🟡 Warning: Low humidity detected' });
+
+            if (motion === 1) alerts.push({ type: 'warning', msg: '🚨 Motion detected at ' + new Date().toLocaleTimeString() });
+
+            const alertsContainer = document.getElementById('alertsContainer');
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = '<p style="color: #666;">✓ No alerts. All sensors operating normally.</p>';
+            } else {
+                alertsContainer.innerHTML = alerts.map(alert => `
+                    <div class="alert-item ${alert.type}">
+                        <span>${alert.msg}</span>
+                        <span class="alert-time">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Control functions
+        function startSimulation() {
+            if (isRunning) return;
+            isRunning = true;
+            updateInterval = parseInt(document.getElementById('updateInterval').value);
+            maxDataPoints = parseInt(document.getElementById('dataPoints').value);
+            
+            simulationInterval = setInterval(() => {
+                updateData();
+            }, updateInterval);
+
+            document.getElementById('statusText').textContent = 'Live';
+        }
+
+        function stopSimulation() {
+            isRunning = false;
+            clearInterval(simulationInterval);
+            document.getElementById('statusText').textContent = 'Paused';
+        }
+
+        function resetData() {
+            temperatureData = [];
+            humidityData = [];
+            motionData = [];
+            timestamps = [];
+            isRunning = false;
+            clearInterval(simulationInterval);
+
+            document.getElementById('dataTable').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data yet. Click "Start" to begin.</td></tr>';
+            document.getElementById('alertsContainer').innerHTML = '<p style="color: #666;">✓ No alerts. All sensors operating normally.</p>';
+            document.getElementById('statusText').textContent = 'Ready';
+
+            // Reset display
+            document.getElementById('tempValue').textContent = '--';
+            document.getElementById('humidValue').textContent = '--';
+            document.getElementById('motionValue').textContent = '--';
+
+            // Reinitialize charts
+            Object.values(chartInstances).forEach(chart => chart.destroy());
+            chartInstances = {};
+            initializeCharts();
+        }
+
+        // Update interval control
+        document.getElementById('updateInterval').addEventListener('change', function() {
+            if (isRunning) {
+                stopSimulation();
+                startSimulation();
+            }
+        });
+
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
