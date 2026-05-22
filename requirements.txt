@@ -1,0 +1,23 @@
+# DecodeLabs Sensor Simulator - Project 1
+# Pure Python Implementation - No External Dependencies Required
+
+# Python 3.7+ is required
+# All modules used are from Python Standard Library:
+# - random (random number generation)
+# - time (timing and delays)
+# - json (data serialization)
+# - csv (CSV file operations)
+# - datetime (timestamp generation)
+# - sys (command-line interface)
+# - os (file operations)
+# - dataclasses (structured data)
+# - typing (type hints)
+# - enum (type-safe enumerations)
+# - pathlib (file path operations)
+# - argparse (command-line argument parsing)
+
+# Development Dependencies (optional):
+# pytest>=6.0          # Unit testing
+# black>=21.0          # Code formatting
+# pylint>=2.0          # Code linting
+# mypy>=0.900          # Type checking
