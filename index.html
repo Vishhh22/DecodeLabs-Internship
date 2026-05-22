@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecodeLabs Sensor Simulator - Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 4px solid #667eea;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Sections */
+        section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.6s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        section h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            border-bottom: 3px solid #764ba2;
+            padding-bottom: 0.5rem;
+        }
+
+        section h3 {
+            color: #764ba2;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: white;
+            margin-top: 0;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: #f4f4f4;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            overflow-x: auto;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+
+        pre code {
+            color: #667eea;
+        }
+
+        /* Output Display */
+        .output-box {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 1.5rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 2px solid #667eea;
+        }
+
+        .output-box p {
+            margin: 0.5rem 0;
+            line-height: 1.4;
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat .label {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        /* Data Sample */
+        .data-sample {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f5f5f5;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 0.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 4px solid #667eea;
+        }
+
+        .sensor-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            section {
+                padding: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>🔬 DecodeLabs Sensor Simulator</h1>
+        <p>Real-time IoT Sensor Data Collection & Analysis</p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Overview Section -->
+        <section>
+            <h2>📋 Project Overview</h2>
+            <p>A comprehensive sensor data simulator that collects, processes, and logs real-time sensor data. Built as part of the DecodeLabs Internship program to demonstrate IoT concepts, data handling, and sensor simulation.</p>
+            
+            <div class="sensor-badges">
+                <span class="badge">🌡️ Temperature Sensor</span>
+                <span class="badge">💧 Humidity Sensor</span>
+                <span class="badge">🚨 Motion Sensor</span>
+                <span class="badge">📊 Data Logging</span>
+                <span class="badge">📈 Statistics</span>
+            </div>
+
+            <h3>✨ Key Features</h3>
+            <ul style="margin-left: 2rem;">
+                <li><strong>Multi-Sensor Support:</strong> Temperature, Humidity, and Motion sensors</li>
+                <li><strong>Realistic Simulation:</strong> Natural drift and variation in readings</li>
+                <li><strong>Real-time Display:</strong> Live sensor readings with formatted output</li>
+                <li><strong>Dual Data Export:</strong> JSON and CSV formats for analysis</li>
+                <li><strong>Statistical Analysis:</strong> Min, max, and average calculations</li>
+                <li><strong>No Dependencies:</strong> Uses only Python standard library</li>
+            </ul>
+        </section>
+
+        <!-- Features Section -->
+        <section>
+            <h2>🎯 Features & Capabilities</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🌡️</div>
+                    <h3>Temperature Sensor</h3>
+                    <p>Simulates realistic temperature fluctuations with natural drift and variation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">💧</div>
+                    <h3>Humidity Sensor</h3>
+                    <p>Tracks humidity levels with gradual changes and realistic constraints</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🚨</div>
+                    <h3>Motion Sensor</h3>
+                    <p>Detects motion events with configurable probability settings</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📊</div>
+                    <h3>Data Logging</h3>
+                    <p>Automatically saves data in JSON and CSV formats for analysis</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📈</div>
+                    <h3>Statistics</h3>
+                    <p>Calculates comprehensive statistics for trend analysis</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">⚙️</div>
+                    <h3>Extensible Design</h3>
+                    <p>Easy to add new sensors and customize behavior</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sample Output Section -->
+        <section>
+            <h2>📊 Sample Output</h2>
+            
+            <h3>Real-Time Sensor Readings</h3>
+            <div class="output-box">
+                <p>[10:30:45] Sensor Readings:</p>
+                <p>--------------------------------------------------</p>
+                <p>  🌡️  TEMP_001         22.34 °C</p>
+                <p>  💧 HUM_001          52.16 %</p>
+                <p>  🚨 MOTION_001            0.00 state</p>
+                <p></p>
+                <p>[10:30:47] Sensor Readings:</p>
+                <p>--------------------------------------------------</p>
+                <p>  🌡️  TEMP_001         22.89 °C</p>
+                <p>  💧 HUM_001          50.45 %</p>
+                <p>  🚨 MOTION_001            1.00 state</p>
+            </div>
+
+            <h3>Statistical Summary</h3>
+            <div class="output-box">
+                <p>📈 SENSOR STATISTICS</p>
+                <p>============================================================</p>
+                <p>Temperature (°C):</p>
+                <p>  Min: 21.50°C | Max: 23.85°C | Avg: 22.67°C</p>
+                <p>Humidity (%):</p>
+                <p>  Min: 48.20% | Max: 54.30% | Avg: 51.23%</p>
+                <p>Motion Detection:</p>
+                <p>  Detections: 4 / 15 readings</p>
+            </div>
+
+            <h3>Data Export Samples</h3>
+            
+            <h4>JSON Format (sensor_data.json)</h4>
+            <pre><code>{
+  "sensor_type": "temperature",
+  "value": 22.34,
+  "unit": "°C",
+  "timestamp": "2026-05-22T10:30:45.123456",
+  "sensor_id": "TEMP_001"
+}</code></pre>
+
+            <h4>CSV Format (sensor_data.csv)</h4>
+            <div class="data-sample">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>sensor_type</th>
+                            <th>value</th>
+                            <th>unit</th>
+                            <th>timestamp</th>
+                            <th>sensor_id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>temperature</td>
+                            <td>22.34</td>
+                            <td>°C</td>
+                            <td>2026-05-22T10:30:45</td>
+                            <td>TEMP_001</td>
+                        </tr>
+                        <tr>
+                            <td>humidity</td>
+                            <td>52.16</td>
+                            <td>%</td>
+                            <td>2026-05-22T10:30:45</td>
+                            <td>HUM_001</td>
+                        </tr>
+                        <tr>
+                            <td>motion</td>
+                            <td>0.0</td>
+                            <td>state</td>
+                            <td>2026-05-22T10:30:45</td>
+                            <td>MOTION_001</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Quick Stats Section -->
+        <section>
+            <h2>📈 Project Statistics</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="number">3</div>
+                    <div class="label">Active Sensors</div>
+                </div>
+                <div class="stat">
+                    <div class="number">∞</div>
+                    <div class="label">Scalability</div>
+                </div>
+                <div class="stat">
+                    <div class="number">2</div>
+                    <div class="label">Export Formats</div>
+                </div>
+                <div class="stat">
+                    <div class="number">0</div>
+                    <div class="label">Dependencies</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section>
+            <h2>🚀 Getting Started</h2>
+            
+            <h3>Prerequisites</h3>
+            <ul style="margin-left: 2rem;">
+                <li>Python 3.7 or higher</li>
+                <li>No external dependencies required</li>
+            </ul>
+
+            <h3>Installation & Running</h3>
+            <pre><code># Clone the repository
+git clone https://github.com/Vishhh22/DecodeLabs-Internship.git
+cd DecodeLabs-Internship
+
+# Run the simulator (default: 30 seconds)
+python sensor_simulator.py
+
+# View sample output
+python sample_output.py</code></pre>
+
+            <h3>Customization</h3>
+            <pre><code>from sensor_simulator import SensorSimulator
+
+# Create simulator instance
+simulator = SensorSimulator()
+
+# Run with custom parameters
+# duration_seconds: how long to run (default: 30)
+# interval: seconds between readings (default: 2.0)
+simulator.run_simulation(duration_seconds=60, interval=1.0)
+
+# View statistics
+simulator.get_statistics()</code></pre>
+        </section>
+
+        <!-- Skills Section -->
+        <section>
+            <h2>🎓 Skills Demonstrated</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="icon">🔧</div>
+                    <div class="label">OOP Design</div>
+                </div>
+                <div class="stat">
+                    <div class="icon">📊</div>
+                    <div class="label">Data Handling</div>
+                </div>
+                <div class="stat">
+                    <div class="icon">🎯</div>
+                    <div class="label">Sensor Concepts</div>
+                </div>
+                <div class="stat">
+                    <div class="icon">💾</div>
+                    <div class="label">File I/O</div>
+                </div>
+                <div class="stat">
+                    <div class="icon">📈</div>
+                    <div class="label">Statistics</div>
+                </div>
+                <div class="stat">
+                    <div class="icon">⚡</div>
+                    <div class="label">Real-time Processing</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Repository Section -->
+        <section>
+            <h2>📚 Resources & Links</h2>
+            <p>
+                <a href="https://github.com/Vishhh22/DecodeLabs-Internship" class="btn">🔗 View on GitHub</a>
+                <a href="https://github.com/Vishhh22/DecodeLabs-Internship#readme" class="btn">📖 Read Documentation</a>
+                <a href="https://github.com/Vishhh22/DecodeLabs-Internship/blob/main/USAGE_EXAMPLES.md" class="btn">📝 Usage Examples</a>
+            </p>
+
+            <h3>Project Files</h3>
+            <ul style="margin-left: 2rem;">
+                <li><strong>sensor_simulator.py</strong> - Main simulator application</li>
+                <li><strong>sample_output.py</strong> - Quick output demonstration</li>
+                <li><strong>README.md</strong> - Complete documentation</li>
+                <li><strong>USAGE_EXAMPLES.md</strong> - Advanced usage guide</li>
+                <li><strong>requirements.txt</strong> - Dependencies (stdlib only)</li>
+            </ul>
+        </section>
+
+        <!-- Next Steps Section -->
+        <section>
+            <h2>🔄 Future Enhancements</h2>
+            <h3>Potential Extensions:</h3>
+            <ul style="margin-left: 2rem;">
+                <li>📊 Add data visualization with matplotlib/plotly</li>
+                <li>🗄️ Integrate SQLite for persistent storage</li>
+                <li>🌐 Build Flask web dashboard</li>
+                <li>🚨 Implement anomaly detection system</li>
+                <li>📡 Add MQTT/IoT support</li>
+                <li>☁️ Cloud integration (AWS/Azure/GCP)</li>
+                <li>🔌 Real hardware sensor support (Raspberry Pi)</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h3>🔬 DecodeLabs Internship - Sensor Data Collection Track</h3>
+        <p>Built with Python | No External Dependencies | Open Source</p>
+        <p style="margin-top: 1rem; opacity: 0.8;">© 2026 DecodeLabs Internship Program</p>
+    </footer>
+</body>
+</html>
